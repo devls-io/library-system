@@ -1,0 +1,17 @@
+{
+    "name": "leonardo/library-system",
+    "autoload": {
+        "psr-4": {
+            "Leonardo\\LibrarySystem\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Leonardo Sudré",
+            "email": "165829938+devls-io@users.noreply.github.com"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
