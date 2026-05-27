@@ -62,7 +62,7 @@ class UserRepository{
      * @return User|null Retorna o objeto User ou null se não for encontrado.
      */
 
-    public function buscarPorid(int $id): ?User{
+    public function buscarPorId(int $id): ?User{
         $sql = "SELECT * FROM users where id = :id";
 
         $stmt = $this->db->prepare($sql);
