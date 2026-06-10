@@ -61,7 +61,7 @@ class BookRepository{
         $stmt->bindValue(':ano', $livro->getAno(), PDO::PARAM_INT);
         $stmt->bindValue(':genero', $livro->getGenero());
         $stmt->bindValue(':classificacao', $livro->getClassificacao(), PDO::PARAM_INT);
-        $stmt->bindValue(':disponivel', $livro->getDisponivel());
+        $stmt->bindValue(':disponivel', (int)$livro->getDisponivel(), PDO::PARAM_INT);
         $stmt->bindValue(':totalPaginas', $livro->getTotalPaginas(), PDO::PARAM_INT);
 
         return $stmt->execute();
@@ -131,7 +131,7 @@ class BookRepository{
         $stmt->bindValue(':ano', $livro->getAno(), PDO::PARAM_INT);
         $stmt->bindValue(':genero', $livro->getGenero());
         $stmt->bindValue(':classificacao', $livro->getClassificacao(), PDO::PARAM_INT);
-        $stmt->bindValue(':disponivel', $livro->getDisponivel());
+        $stmt->bindValue(':disponivel', (int)$livro->getDisponivel(), PDO::PARAM_INT);
         $stmt->bindValue(':totalPaginas', $livro->getTotalPaginas(), PDO::PARAM_INT);
 
         // Preencher com o Id
