@@ -1,5 +1,6 @@
 <?php 
-
+// Config de fuso-horario
+date_default_timezone_set('America/Sao_Paulo');
 // (Autoload + .env)
 require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/src/helpers/response.php';
