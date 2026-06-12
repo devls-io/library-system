@@ -2,11 +2,9 @@
 
 Uma API RESTful para gerenciamento de biblioteca, desenvolvida em PHP puro, utilizando a arquitetura MVC (Model-View-Controller) e conceitos modernos de Orientação a Objetos.
 
-## 🚀 Status do Projeto: Módulos de Usuários e Livros Concluídos
+## 🚀 Status do Projeto: Sistema Completo (Usuários, Livros e Empréstimos Concluídos)
 
-O ecossistema base da aplicação, o CRUD completo de usuários e livros foram implementados com sucesso e estão 100% funcionais, incluindo validações de regras de negócio.
-
----
+O ecossistema base da aplicação, incluindo o CRUD completo de usuários e livros, além do módulo de fluxo de empréstimos e devoluções com sincronização de estados, foram implementados com sucesso e estão 100% funcionais.
 
 ## 🛠️ Arquitetura e Decisões Técnicas
 
@@ -16,11 +14,13 @@ Para fugir do PHP estruturado tradicional e simular o comportamento dos grandes 
 
 - **Closure Routes (`routes.php`):** Mapeamento moderno utilizando funções anônimas e a palavra-chave `use` para isolamento e injeção de dependência dos Controllers.
 
-- **Camada de Repositório (`UserRepository.php`, `BookRepository.php`):** Responsável por isolar totalmente as consultas SQL (PDO) da lógica de negócios e persistência da aplicação.
+- **Camada de Repositório (`UserRepository.php`, `BookRepository.php`, `LoanRepository.php`):** Responsável por isolar totalmente as consultas SQL (PDO) da lógica de negócios e persistência da aplicação.
 
-- **Encapsulamento e Entidades (`User.php`, `Book.php`):** Uso rigoroso de Getters/Setters para validação de regras de negócio na porta de entrada (como criptografia de senhas, whitelists de classificação indicativa e travas de datas futuras).
+- **Encapsulamento e Entidades (`User.php`, `Book.php`, `Loan.php`):** Uso rigoroso de Getters/Setters para validação de regras de negócio na porta de entrada (como criptografia de senhas, whitelists de classificação indicativa, gerenciamento de fuso horário preciso com precisão de segundos e travas de consistência).
 
-- **Tratamento de Erros e Controllers:** Implementação de blocos `try/catch` centralizados nos Controllers, capturando exceções de validação ou do banco de dados e devolvendo respostas padronizadas em JSON com status HTTP corretos (`400 Bad Request`, `404 Not Found`, `500 Internal Error`).
+- **Sincronização de Estados e Cláusulas de Guarda:** O fluxo de empréstimo implementa travas lógicas rigorosas. Um livro só pode ser emprestado se estiver com o status `disponivel = true`. Caso contrário, a aplicação intercepta a requisição precocemente, protegendo a integridade do banco contra duplicidades desnecessárias. Na devolução, o estado do livro é restaurado de forma síncrona.
+
+- **Tratamento de Erros e Controllers:** Implementação de blocos `try/catch` centralizados nos Controllers, capturando exceções de validação ou do banco de dados e devolvendo respostas padronizadas em JSON com status HTTP corretos (`200 OK`, `201 Created`, `400 Bad Request`, `404 Not Found`, `500 Internal Error`).
 
 ---
 
@@ -47,6 +47,15 @@ Todas as requisições e respostas trafegam em formato **JSON**.
 | **POST** | `/livros/show`   | Busca detalhes de um livro específico | `{"id"}`                                                                |
 | **POST** | `/livros/update` | Atualiza dados de um livro existente  | `{"id", "titulo", "autor", "ano", "genero", ...}`                       |
 | **POST** | `/livros/delete` | Remove um livro do banco de dados     | `{"id"}`                                                                |
+
+### 🤝 Módulo de Empréstimos e Devoluções
+
+| Método   | Endpoint              | Descrição                                                      | Payload (JSON)         |
+| :------- | :-------------------- | :------------------------------------------------------------- | :--------------------- |
+| **GET**  | `/emprestimos`        | Lista o histórico de todos os empréstimos registrados          | Nenhum                 |
+| **POST** | `/emprestimos/store`  | Registra um novo empréstimo e altera o livro para indisponível | `{"userId", "bookId"}` |
+| **POST** | `/emprestimos/update` | Realiza a devolução do livro e altera o status para disponível | `{"id"}`               |
+| **POST** | `/emprestimos/show`   | Busca detalhes de um empréstimo específico                     | `{"id"}`               |
 
 ---
 
@@ -114,6 +123,17 @@ Antes de começar, você vai precisar ter instalado em sua máquina:
       disponivel BOOLEAN DEFAULT TRUE,
       totalPaginas INT NOT NULL
    );
+
+   CREATE TABLE loans(
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      book_id INT NOT NULL,
+      data_emprestimo TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+      data_devolucao TIMESTAMP NULL DEFAULT NULL,
+      CONSTRAINT fk_emprestimo_usuario FOREIGN KEY (user_id) REFERENCES users(id),
+      CONSTRAINT fk_emprestimo_livro FOREIGN KEY (book_id) REFERENCES books(id)
+
+   );
    ```
 
 5. **Testando o projeto**
@@ -125,3 +145,15 @@ Antes de começar, você vai precisar ter instalado em sua máquina:
    ```
 
    Agora a aplicação está pronta para receber requisições! Você pode importar as rotas no Postman utilizando o endereço http://localhost:8000 seguido dos endpoints documentados acima.
+
+---
+
+## 🏁 Conclusão do MVP e Próximos Passos (Transição para v2)
+
+Com a entrega do módulo de empréstimos, o objetivo principal desta **v1** foi **100% atingido**: consolidar os fundamentos do PHP Vanilla, aplicar de forma prática os conceitos de **Orientação a Objetos (OOP)** e entender os bastidores de um padrão arquitetural MVC real.
+
+Como a base teórica e prática foi totalmente validada, esta versão foi oficialmente encerrada. O projeto agora evoluirá para a **`library-system-v2`**, onde utilizaremos o framework **Laravel** para dar tração ao ecossistema e implementar recursos avançados de mercado:
+
+- **Interface Gráfica (Front-end):** Criação de uma interface para o usuário interagir com o sistema, saindo do Postman.
+- **Autenticação e Níveis de Acesso (Roles):** Sistema de login seguro para diferenciar as ações de Administradores (bibliotecários) e Leitores (usuários).
+- **Geração de Documentos:** Integração com envio de e-mails automáticos e geração de comprovantes de empréstimo em PDF.
